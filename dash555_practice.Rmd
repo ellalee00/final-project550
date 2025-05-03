@@ -1,0 +1,205 @@
+---
+title: "Final Project 4a"
+author: "Ella Lee"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+install.packages("flexdashboard")
+library(flexdashboard)
+install.packages("tidyverse")
+install.packages("plotly")
+library(tidyverse)
+library(plotly)
+
+```
+
+```{r}
+# Load and transform the data
+data <- read_csv("AnnualData2024_clean.csv") 
+data_long <- data %>% 
+  pivot_longer(cols = January:December, names_to = "Month", values_to = "Count")
+
+# Widget 1: Line chart with hover tooltips
+plot_ly(data_long,
+        x = ~Month,
+        y = ~Count,
+        color = ~`Race_Ethnicity`,
+        type = 'scatter',
+        mode = 'lines+markers',
+        hoverinfo = 'text',
+        text = ~paste("Race:", `Race_Ethnicity`,
+                      "<br>Month:", Month,
+                      "<br>Count:", round(Count, 0))) %>%
+  layout(title = "Monthly Trends by Race/Ethnicity",
+         xaxis = list(title = "Month"),
+         yaxis = list(title = "Count"))
+
+```
+
+```{r}
+# Widget 2: Bar chart with sorting
+data %>%
+  arrange(desc(`Total for 2024`)) %>%
+  plot_ly(
+    x = ~reorder(`Race_Ethnicity`, `Total for 2024`),
+    y = ~`Total for 2024`,
+    type = 'bar',
+    hoverinfo = 'text',
+    text = ~paste("Total Count:", `Total for 2024`)
+  ) %>%
+  layout(title = "Total Count in 2024 by Race/Ethnicity",
+         xaxis = list(title = "Race/Ethnicity"),
+         yaxis = list(title = "Total Count"))
+
+```
+
+```{r}
+
+renderUI({
+  HTML("<p><strong>Source:</strong> Confidential internal dataset</p>
+        <p><strong>Sample Size:</strong> 29 race/ethnicity groups</p>
+        <p><strong>Data Collection:</strong> Monthly tallies across 2024</p>
+        <p><strong>Study Population:</strong> Individuals categorized by race/ethnicity</p>
+        <p><strong>Time Period:</strong> January–December 2024</p>")
+})
+
+```
+```{r}
+
+library(tidyverse)
+library(plotly)
+
+# Load the data
+data <- read_csv("AnnualData2024_clean.csv")
+
+# Clean column names
+colnames(data) <- str_trim(colnames(data))
+
+# Define the section headers (as they appear in the CSV)
+headers <- c("Age Category 1 ", "Age Category 2", 
+             "Housing Status ", "Health Conditions", "Overdose Reversals ")
+
+# Get row numbers of headers
+header_rows <- which(data$Race_Ethnicity %in% headers)
+header_rows <- c(0, header_rows, nrow(data) + 1)  # Add start and end boundaries
+
+# Create a named list to store all charts
+plots <- list()
+
+# Function to create a bar chart widget for a category
+make_widget <- function(df, category_name) {
+  df <- df %>%
+    filter(!is.na(`Total for 2024`)) %>%
+    mutate(Race_Ethnicity = str_trim(Race_Ethnicity)) %>%
+    arrange(desc(`Total for 2024`))
+  
+  plot_ly(
+    data = df,
+    x = ~reorder(Race_Ethnicity, `Total for 2024`),
+    y = ~`Total for 2024`,
+    type = 'bar',
+    text = ~paste("Total:", `Total for 2024`),
+    hoverinfo = 'text'
+  ) %>%
+    layout(
+      title = paste("Total Count in 2024 by", category_name),
+      xaxis = list(title = category_name),
+      yaxis = list(title = "Total Count")
+    )
+}
+
+# Create widget for Race/Ethnicity (manually since it's the first block)
+plots[["Race/Ethnicity"]] <- make_widget(data[1:(header_rows[2]-1), ], "Race/Ethnicity")
+
+# Loop through the rest of the categories
+for (i in 2:(length(header_rows) - 1)) {
+  cat_name <- str_trim(data$Race_Ethnicity[header_rows[i]])
+  start <- header_rows[i] + 1
+  end <- header_rows[i + 1] - 1
+  subset_df <- data[start:end, ]
+  plots[[cat_name]] <- make_widget(subset_df, cat_name)
+}
+
+# To display a specific chart, use for example:
+plots[["Age Category 1"]]
+
+
+
+
+```
+
+```{r}
+
+library(tidyverse)
+library(plotly)
+
+# Load the data
+data <- read_csv("AnnualData2024_clean.csv")
+
+# Clean column names
+colnames(data) <- str_trim(colnames(data))
+
+# Define the section headers (as they appear in the CSV)
+headers <- c("Age Category 1 ", "Age Category 2", 
+             "Housing Status ", "Health Conditions", "Overdose Reversals ")
+
+# Get row numbers of headers
+header_rows <- which(data$Race_Ethnicity %in% headers)
+header_rows <- c(0, header_rows, nrow(data) + 1)
+
+# Function to create a bar chart widget for a category
+make_widget <- function(df, category_name) {
+  df <- df %>%
+    filter(!is.na(`Total for 2024`)) %>%
+    mutate(Race_Ethnicity = str_trim(Race_Ethnicity)) %>%
+    arrange(desc(`Total for 2024`))
+  
+  plot_ly(
+    data = df,
+    x = ~reorder(Race_Ethnicity, `Total for 2024`),
+    y = ~`Total for 2024`,
+    type = 'bar',
+    text = ~paste("Total:", `Total for 2024`),
+    hoverinfo = 'text'
+  ) %>%
+    layout(
+      title = paste("Total Count in 2024 by", category_name),
+      xaxis = list(title = category_name),
+      yaxis = list(title = "Total Count")
+    )
+}
+
+# Create a list of widgets
+plots <- list()
+
+plots[["Race/Ethnicity"]] <- make_widget(data[1:(header_rows[2]-1), ], "Race/Ethnicity")
+
+for (i in 2:(length(header_rows) - 1)) {
+  cat_name <- str_trim(data$Race_Ethnicity[header_rows[i]])
+  start <- header_rows[i] + 1
+  end <- header_rows[i + 1] - 1
+  subset_df <- data[start:end, ]
+  plots[[cat_name]] <- make_widget(subset_df, cat_name)
+}
+
+# 🎯 COMBINE all plots into one dashboard layout
+dashboard <- subplot(
+  plots,
+  nrows = 3,  # adjust how many rows you want!
+  margin = 0.05,
+  shareX = FALSE,
+  shareY = FALSE,
+  titleX = TRUE,
+  titleY = TRUE
+)
+
+# Display the dashboard
+dashboard
+
+
+```
+
+
