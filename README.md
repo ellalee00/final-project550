@@ -24,7 +24,7 @@ This project demonstrates how to use Docker to build a fully reproducible enviro
 
 ## 🐳 Docker Image Setup
 
-### 🔧 How to Build the Docker Image (5 pts)
+### 🔧 How to Build the Docker Image
 
 To build the Docker image locally, run the following command in your terminal from the root of this repository:
 
