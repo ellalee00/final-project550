@@ -8,13 +8,13 @@ This project analyzes substance use trends in rave settings using Reddit posts f
 
 ## 🛠️ How to Generate the Final Report
 
-1. Open the `rave_analysis_report.Rmd` file in RStudio.
+1. Open the `FinalProject2.Rmd` file in RStudio.
 2. Install the required R packages (see below).
 3. Make sure the file `aves_SR_data.csv` is in the correct directory (referenced in the script).
 4. Knit the RMarkdown file to HTML by clicking the **Knit** button or running:
 
    ```r
-   rmarkdown::render("rave_analysis_report.Rmd")
+   rmarkdown::render("FinalProject2.Rmd")
 
 # 📊 Automated R Report in Docker
 
@@ -29,4 +29,4 @@ This project demonstrates how to use Docker to build a fully reproducible enviro
 To build the Docker image locally, run the following command in your terminal from the root of this repository:
 
 ```bash
-docker build -t yourdockerhubusername/r-message-report .
+docker build -t ellalee00/r-message-report .
