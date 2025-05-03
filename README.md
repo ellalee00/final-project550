@@ -15,3 +15,18 @@ This project analyzes substance use trends in rave settings using Reddit posts f
 
    ```r
    rmarkdown::render("rave_analysis_report.Rmd")
+
+# 📊 Automated R Report in Docker
+
+This project demonstrates how to use Docker to build a fully reproducible environment for running an automated R script that prints messages based on system environment variables.
+
+---
+
+## 🐳 Docker Image Setup
+
+### 🔧 How to Build the Docker Image (5 pts)
+
+To build the Docker image locally, run the following command in your terminal from the root of this repository:
+
+```bash
+docker build -t yourdockerhubusername/r-message-report .
