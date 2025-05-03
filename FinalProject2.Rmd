@@ -1,0 +1,135 @@
+---
+title: "Data Analysis Report"
+author: "Ella Lee"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Introduction
+This report analyzes substance use trends in rave settings using data from the r/aves subreddit on Reddit. The objective of this analysis is identify the most frequently mentioned substances, their context of use, and any emerging patterns over time by preprocessing and analyzing this text data with R.The dataset includes information on discussions about rave culture, including conversations related to music festivals, experiences, and often mentions of substance use.This report focuses on the number of mentions on Cocaine, MDMA, and Ketamine in rave settings in July and August, which are the months that has the most mention of substances and raves. 
+
+
+# Data Loading
+```{r load_data, warning=FALSE}
+# Load necessary libraries
+library(rtweet)
+library(tm)
+library(SnowballC)
+library(dplyr)
+library(wordcloud)
+library(ggplot2)
+library(readr)
+
+
+library(here)
+
+
+```
+
+
+```{r, warning=FALSE}
+setwd("C:/Users/ella9/OneDrive/문서/Thesis")
+
+
+data_path <- here("Thesis", "aves_SR_data.csv")
+
+```
+
+
+
+```{r, warning=FALSE}
+
+# Load the dataset
+set1 <- read.csv("aves_SR_data.csv")
+set1
+
+as.POSIXct(set1$created_at, format = "%Y-%m-%d %H:%M:%S", tz = "UTC", na.rm=TRUE)
+```
+
+# Analyzing Data
+```{r, warning=FALSE}
+length(unique(set1$selftext))
+dim(set1)
+
+set1_texts <- tolower(set1$selftext)
+molly_count <- length(grep('moly|molly|mdma|ecstasy|\bbeans\b|buiscuit|disco biscuit|\be\b|\bhug bug\b|\bxtc\b|\bstp\b',set1_texts))
+molly_count
+
+cocaine_count <- length(grep('nose beer|nose candy|coke|cnady|bump|snow',set1_texts))
+cocaine_count
+
+ketamine_count <- length(grep('\bk\b|\bket\b|ketamine|\bkat\b|\bspecial k\b|\bcat valium\b|\bvitamin k\b',set1_texts))
+ketamine_count
+
+```
+
+#Formatting the table
+```{r, warning=FALSE}
+# A summary table with the counts of each drug
+drug_mentions <- data.frame(
+  Drug = c("MDMA", "Cocaine", "Ketamine"),
+  Mentions = c(molly_count, cocaine_count, ketamine_count)
+)
+
+# Displaying the table
+kable(drug_mentions, caption = "Drug Mentions in Reddit Posts", format = "html")
+```
+
+
+#Table Description
+This table presents the number of mentions of MDMA, Cocaine, and Ketamine in the dataset. The "Drug" column lists the substances being analyzed, and the "Mentions" column shows the total count of times each substance is mentioned across all posts in the dataset.
+
+MDMA: This substance is mentioned 1526 times in the posts.
+Cocaine: This substance appears 432 times in the posts.
+Ketamine: This substance is mentioned 260 times in the posts.
+
+The table provides a simple summary of how frequently these three substances are discussed in the given Reddit data, offering insights into which drugs are most commonly referenced in July and August of 2024.
+
+
+# Data Visualization
+
+```{r, warning=FALSE}
+library(ggplot2)
+
+# Convert text column to lowercase
+set1_texts <- tolower(set1$selftext)
+
+# Count mentions of each drug using regex
+cocaine_count <- length(grep('nose beer|nose candy|coke|cnady|bump|snow', set1_texts))
+ketamine_count <- length(grep('\\bk\\b|\\bket\\b|ketamine|\\bkat\\b|\\bspecial k\\b|\\bcat valium\\b|\\bvitamin k\\b', set1_texts))
+molly_count <- length(grep('moly|molly|mdma|ecstasy|\\bbeans\\b|buiscuit|disco biscuit|\\be\\b|\\bhug bug\\b|\\bxtc\\b|\\bstp\\b', set1_texts))
+
+# Create a data frame for visualization
+drug_counts <- data.frame(
+  Drug = c("Cocaine", "Ketamine", "MDMA"),
+  Mentions = c(cocaine_count, ketamine_count, molly_count)
+)
+
+# Plot the bar chart
+ggplot(drug_counts, aes(x = Drug, y = Mentions, fill = Drug)) +
+  geom_bar(stat = "identity", color = "black") +
+  theme_minimal() +
+  labs(title = "Mentions of Cocaine, Ketamine, and MDMA in Text Data",
+       x = "Drug",
+       y = "Number of Mentions") +
+  scale_fill_manual(values = c("Cocaine" = "red", "Ketamine" = "blue", "MDMA" = "purple"))
+```
+
+#Figure Description
+This bar chart visually represents the frequency of mentions of three substances across the posts in the subreddit dataset. The x-axis corresponds to the different drugs being analyzed, while the y-axis shows the total number of mentions for each substance.
+
+MDMA has the highest number of mentions, indicated by the tallest bar.
+Cocaine follows with a moderate number of mentions.
+Ketamine has the least mentions among the three, as shown by the shortest bar.
+This chart provides a clear visual comparison of how frequently each drug is discussed within the dataset, with MDMA being the most commonly mentioned, followed by Cocaine, and then Ketamine.
+
+```{r, echo=FALSE}
+rmarkdown::render("FinalProject2.Rmd")
+
+```
+
